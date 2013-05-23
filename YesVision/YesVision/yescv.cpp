@@ -11,9 +11,9 @@
 #include "yescv.h"
 
 // Static string declarations
-const char * YesVision::windowName = "YesVision";
-const char * YesVision::pathToXML = "/Users/Derek/Desktop/InternStuff/facedetection/2013OpenCV/opencv/data/haarcascades/haarcascade_frontalface_default.xml";
-
+const char * YesVision::WINDOW_NAME = "YesVision";
+const char * YesVision::PATH_TO_XML = "/Users/Derek/Desktop/InternStuff/facedetection/2013OpenCV/opencv/data/haarcascades/haarcascade_frontalface_default.xml";
+const char * YesVision::PATH_TO_AVI = "/Users/Derek/Desktop/InternStuff/facedetection/2013OpenCV/test.avi";
 
 YesVision::YesVision() {
     errCode = visionInit();
@@ -22,7 +22,7 @@ YesVision::YesVision() {
 
 YesVision::~YesVision() {
     cvReleaseCapture(&captureSrc);
-    cvDestroyWindow(windowName);
+    cvDestroyWindow(WINDOW_NAME);
     if (cascade) cvReleaseHaarClassifierCascade(&cascade);
     if (pStorage) cvReleaseMemStorage(&pStorage);
 }
@@ -34,17 +34,23 @@ YesVision::~YesVision() {
  */
 int YesVision::visionInit() {
     int retval = CAP_SRC_OK;
+   
     
     // Initialize the camera capture.
     captureSrc = cvCaptureFromCAM(CV_CAP_ANY); // CV_CAP_ANY means any camera.
 
+    
+
+
+    //    captureSrc = cvCaptureFromFile(PATH_TO_AVI);
+
     // Load the classifier xml and allocate memory.
-    cascade = (CvHaarClassifierCascade *)cvLoad(pathToXML, 0, 0, 0);    
+    cascade = (CvHaarClassifierCascade *)cvLoad(PATH_TO_XML, 0, 0, 0);    
     pStorage = cvCreateMemStorage(0);
 
     // Check if classifier was successfully loaded.
     if (cascade == NULL) { 
-        fprintf(stderr, "ERROR: Casacade is NULL !!\n");
+        fprintf(stderr, "ERROR: Cascade is NULL !!\n");
         retval = INIT_FAIL;
     }
    
@@ -67,15 +73,21 @@ int YesVision::visionInit() {
  * Creates a window and displays input from the camera source.
  */
 void YesVision::detectFaces() {
-    cvNamedWindow(windowName, CV_WINDOW_AUTOSIZE);
+    cvNamedWindow(WINDOW_NAME, CV_WINDOW_AUTOSIZE);
     while (1) {
         // Grab a frame
-        IplImage * frame = cvQueryFrame(captureSrc);
+        IplImage * origFrame = cvQueryFrame(captureSrc);
         // Check if the frame is NULL.
-        if (frame == NULL) {
+        if (origFrame == NULL) {
             fprintf(stderr, "ERROR: NULL frame found !!\n");
             break;
         }
+
+        
+        // Create a copy of the grabbed image frame.
+        IplImage * frame = cvCloneImage(origFrame);
+
+
 
         // Detect faces in the frame.
         faceRects = cvHaarDetectObjects(frame, cascade, pStorage,
@@ -93,7 +105,9 @@ void YesVision::detectFaces() {
         }
 
         // Display the image onto the frame.
-        cvShowImage(windowName, frame);
+        cvShowImage(WINDOW_NAME, frame);
+
+        cvReleaseImage(&frame);
         
         // ESC Key Code should be 0x10001B.
         // Break out of the loop if the ESC key is hit.

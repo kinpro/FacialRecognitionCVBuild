@@ -19,6 +19,7 @@
 #include <stdio.h>
 
 
+#define hello 1
 #define CAP_SRC_OK            1
 #define INIT_FAIL             0
 #define ESC_KEY_CODE          27
@@ -42,8 +43,9 @@ class YesVision {
         CvMemStorage *            pStorage;
         CvSeq *                   faceRects;
 
-        static const char *       windowName;
-        static const char *       pathToXML;
+        static const char *       WINDOW_NAME;
+        static const char *       PATH_TO_XML;
+        static const char *       PATH_TO_AVI;
         int                       errCode;        
 };
 #endif //_YESCV_H_
