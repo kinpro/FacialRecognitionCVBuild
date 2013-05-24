@@ -19,11 +19,10 @@
 #include <stdio.h>
 
 
-#define hello 1
 #define CAP_SRC_OK            1
 #define INIT_FAIL             0
 #define ESC_KEY_CODE          27
-#define MIN_NEIGHBORS         6
+#define MIN_NEIGHBORS         4
 #define SEARCH_SCALE_INC_RATE 1.1
 
 using namespace std;
@@ -42,11 +41,14 @@ class YesVision {
         CvHaarClassifierCascade * cascade;
         CvMemStorage *            pStorage;
         CvSeq *                   faceRects;
-
         static const char *       WINDOW_NAME;
         static const char *       PATH_TO_XML;
         static const char *       PATH_TO_AVI;
-        int                       errCode;        
+        static const char *       SLIDER_TEXT;
+        int                       errCode;  
+        int                       sliderPos;
+
+        static void onTrackbarSlide(int pos);
 };
 #endif //_YESCV_H_
 

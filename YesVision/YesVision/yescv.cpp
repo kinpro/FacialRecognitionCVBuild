@@ -14,6 +14,9 @@
 const char * YesVision::WINDOW_NAME = "YesVision";
 const char * YesVision::PATH_TO_XML = "/Users/Derek/Desktop/InternStuff/facedetection/2013OpenCV/opencv/data/haarcascades/haarcascade_frontalface_default.xml";
 const char * YesVision::PATH_TO_AVI = "/Users/Derek/Desktop/InternStuff/facedetection/2013OpenCV/test.avi";
+const char * YesVision::SLIDER_TEXT = "Position";
+
+CvCapture * cap = NULL;
 
 YesVision::YesVision() {
     errCode = visionInit();
@@ -27,22 +30,30 @@ YesVision::~YesVision() {
     if (pStorage) cvReleaseMemStorage(&pStorage);
 }
 
+
 /**
- * Initializes the capture source. This will be the webcam for now.
+  * This defines what will happen when the trackbar is moved. Used for seeking.
+  */
+void YesVision::onTrackbarSlide(int pos) {
+    cvSetCaptureProperty(cap, CV_CAP_PROP_POS_FRAMES, pos);
+}
+
+/**
+ * Initializes the capture source. This will be a .avi file for now.
  * Also loads the desire xml file for the HaarClassifier and sets aside memory for CV.
  * @return error code or success
  */
 int YesVision::visionInit() {
     int retval = CAP_SRC_OK;
    
-    
+
+    /*
     // Initialize the camera capture.
     captureSrc = cvCaptureFromCAM(CV_CAP_ANY); // CV_CAP_ANY means any camera.
-
+    */
     
 
-
-    //    captureSrc = cvCaptureFromFile(PATH_TO_AVI);
+    captureSrc = cvCaptureFromFile(PATH_TO_AVI);
 
     // Load the classifier xml and allocate memory.
     cascade = (CvHaarClassifierCascade *)cvLoad(PATH_TO_XML, 0, 0, 0);    
@@ -65,6 +76,12 @@ int YesVision::visionInit() {
         fprintf(stderr, "ERROR: Capture is NULL !!\n");
         retval = INIT_FAIL;
     }
+
+    // Set the initial of the slider to 0.
+    sliderPos = 0;
+
+    cap = captureSrc;
+
     return retval;
 
 }
@@ -74,6 +91,13 @@ int YesVision::visionInit() {
  */
 void YesVision::detectFaces() {
     cvNamedWindow(WINDOW_NAME, CV_WINDOW_AUTOSIZE);
+    
+    // Add the trackbar to this window.
+    int numFrames = (int)cvGetCaptureProperty(captureSrc, CV_CAP_PROP_FRAME_COUNT);
+    if (numFrames != 0) {
+        cvCreateTrackbar(SLIDER_TEXT, WINDOW_NAME, &sliderPos, numFrames, onTrackbarSlide);
+    }
+    
     while (1) {
         // Grab a frame
         IplImage * origFrame = cvQueryFrame(captureSrc);
@@ -106,9 +130,11 @@ void YesVision::detectFaces() {
 
         // Display the image onto the frame.
         cvShowImage(WINDOW_NAME, frame);
-
         cvReleaseImage(&frame);
-        
+
+        // Update where the slider is.
+        cvSetTrackbarPos(SLIDER_TEXT, WINDOW_NAME, ++sliderPos);
+
         // ESC Key Code should be 0x10001B.
         // Break out of the loop if the ESC key is hit.
         if ((cvWaitKey(10) & 255) == ESC_KEY_CODE) break;
