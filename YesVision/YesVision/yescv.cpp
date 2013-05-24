@@ -103,15 +103,12 @@ void YesVision::detectFaces() {
         IplImage * origFrame = cvQueryFrame(captureSrc);
         // Check if the frame is NULL.
         if (origFrame == NULL) {
-            fprintf(stderr, "ERROR: NULL frame found !!\n");
+            fprintf(stderr, "ERROR: NULL frame !! Possible EOF.\n");
             break;
         }
 
-        
         // Create a copy of the grabbed image frame.
         IplImage * frame = cvCloneImage(origFrame);
-
-
 
         // Detect faces in the frame.
         faceRects = cvHaarDetectObjects(frame, cascade, pStorage,
